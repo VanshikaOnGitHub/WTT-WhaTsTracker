@@ -1,0 +1,9 @@
+urlextract
+pandas
+numpy
+nltk
+emoji
+vaderSentiment
+streamlit
+plotly==
+seaborn==
