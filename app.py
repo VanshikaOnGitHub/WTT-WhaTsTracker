@@ -75,12 +75,11 @@ if uploaded_file is not None:
             with col2:
                 st.subheader('Percentage Messages by Each User')
                 if group_name is not None:
-                    new_df = new_df[new_df['name'] != group_name]
+                    new_df = new_df[new_df['name']!=group_name]
                 st.dataframe(new_df)
 
         # Message timeline
-            st.subheader('Activity Timeline',
-                    help='Time-series data for no. of messages by each user. (Crop/ Zoom for detailed view')
+            st.subheader('Activity Timeline', help='Time-series data for no. of messages by each user. (Crop/ Zoom for detailed view')
             message_timeline_df = helper.n_messages_timeline(selected_user, df)
             fig = px.line(message_timeline_df, x="date", y="message", color='user', markers=True)
             fig.update_layout(
@@ -112,8 +111,7 @@ if uploaded_file is not None:
         with col1:
             day_activity = helper.day_activity_map(selected_user, df)
             fig.add_trace(
-                go.Bar(x=day_activity['day_name'], y=day_activity['n_messages'], marker=dict(color='orange')),
-                row=1, col=1)
+                go.Bar(x=day_activity['day_name'], y=day_activity['n_messages'], marker=dict(color='orange')), row=1, col=1)
 
         with col2:
             month_activity = helper.month_activity_map(selected_user, df)
@@ -335,6 +333,9 @@ if uploaded_file is not None:
         )
         st.plotly_chart(fig)
 
+          
+
+       
 
 
 
