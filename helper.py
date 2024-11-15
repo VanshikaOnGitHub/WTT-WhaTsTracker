@@ -5,7 +5,7 @@ from collections import Counter
 import nltk
 
 nltk.download('stopwords')
-from nltk.corpus import stopwords
+from nltk.corpus import (stopwords)
 from nltk import ngrams
 
 nltk.download('punkt')
@@ -46,8 +46,15 @@ def n_messages_timeline(selected_user, df):
 def most_busy_users(df):
     x = df.groupby('user').count().reset_index()[['user', 'message']].sort_values(by=['message'],
                                                                                       ascending=False).head()
-    new_df = round(pd.DataFrame(df['user'].value_counts(normalize=True, ascending=False)) * 100,
-                   2).reset_index().rename(columns={'index': 'name', 'user': 'percent'})
+    # Calculate percentages and create DataFrame
+    value_counts = df['user'].value_counts(normalize=True) * 100
+
+    # Convert to DataFrame and reset index
+    new_df = round(value_counts, 2).reset_index()
+
+    # Rename columns correctly
+    new_df.columns = ['name', 'percent']
+
     return x, new_df
 
 
@@ -55,16 +62,28 @@ def day_activity_map(selected_user, df):
     if selected_user != 'Overall':
         df = df[df['user'] == selected_user]
     df['day_name'] = df['date'].dt.day_name()
-    return pd.DataFrame(df['day_name'].value_counts()).reset_index().rename(
-        columns={'index': 'day_name', 'day_name': 'n_messages'})
+    day_activity = df['day_name'].value_counts().reset_index()
+
+    # Rename columns
+    day_activity.columns = ['day_name', 'n_messages']  # Set the column names directly
+
+    return day_activity
 
 
 def month_activity_map(selected_user, df):
+
     if selected_user != 'Overall':
         df = df[df['user'] == selected_user]
 
-    return pd.DataFrame(df['month'].value_counts()).reset_index().rename(
-        columns={'index': 'month_name', 'month': 'n_messages'})
+    df['month'] = df['date'].dt.month_name()
+
+    # Count occurrences of each month and create the DataFrame
+    month_activity = df['month'].value_counts().reset_index()
+
+    # Rename columns
+    month_activity.columns = ['month_name', 'n_messages']  # Set the column names directly
+
+    return month_activity
 
 
 def day_heatmap(selected_user, df):
@@ -138,8 +157,11 @@ def keyword_timeline(selected_user, df, keyword):
     df['only_date'] = df['date'].dt.date
     df['keyword_count'] = 0
     for index, row in df.iterrows():
-        df.at[index, 'keyword_count'] = row['message'].lower().count(keyword.lower())
-    return df.groupby(['date', 'user']).sum().reset_index()[['date', 'user', 'keyword_count']]
+        df['keyword_count'] = df['message'].str.lower().str.count(keyword.lower())
+
+        # Group by date and user, summing the keyword count
+    return df.groupby(['date', 'user'], as_index=False)['keyword_count'].sum()
+
 
 
 def sentiment(sentence):
@@ -167,8 +189,10 @@ def sentiment_analysis(selected_user, df):
         else:
             sentiment_label = "Neutral"
         df.at[index, 'sentiment'] = sentiment_label
-    return df, pd.DataFrame(df['sentiment'].value_counts()).reset_index().rename(
-        columns={'index': 'sentiment', 'sentiment': 'frequency'})
+    sentiment_counts = df['sentiment'].value_counts().reset_index()
+    sentiment_counts.columns = ['sentiment', 'frequency']  # Correctly set the column names
+
+    return df, sentiment_counts
 
 
 def emoji_analysis(selected_user, df):
